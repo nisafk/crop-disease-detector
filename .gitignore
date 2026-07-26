@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+*.pth
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Model weights (too large for GitHub, add separately)
+model/best_model.pth
+model/class_names.json
+
+# Node.js
+node_modules/
+frontend/node_modules/
+.npm
+
+# Build output
+frontend/dist/
+frontend/build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
