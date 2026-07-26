@@ -1,0 +1,45 @@
+/* 
+  index.css - Global Styles for Crop Disease Detector
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --green-primary: #16a34a;
+  --green-light: #22c55e;
+  --green-dark: #15803d;
+  --green-glow: rgba(22, 163, 74, 0.3);
+  --bg-dark: #0a0f0a;
+  --bg-card: #111811;
+  --bg-elevated: #1a241a;
+  --text-primary: #f0fdf4;
+  --text-secondary: #86efac;
+  --text-muted: #4ade80;
+  --border-color: rgba(34, 197, 94, 0.2);
+  --border-hover: rgba(34, 197, 94, 0.5);
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --success: #22c55e;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-green: 0 0 40px rgba(22, 163, 74, 0.2);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  background-image: 
+    linear-gradient(rgba(22, 163, 74, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 163, 74, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
