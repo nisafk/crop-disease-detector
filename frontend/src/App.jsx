@@ -23,10 +23,18 @@ function ConfidenceBar({ confidence }) {
 // ResultCard Component
 function ResultCard({ result }) {
   const getBadge = () => {
-    if (result.disease_key === 'uncertain') return { cls: 'uncertain', icon: '⚠️', text: 'Cannot Determine' };
-    if (result.is_healthy) return { cls: 'healthy', icon: '✅', text: 'Plant is Healthy' };
+    if (result.disease_key === 'uncertain') {
+      return { cls: 'uncertain', icon: '⚠️', text: 'Cannot Determine' };
+    }
+    if (result.conf_level === 'low') {
+      return { cls: 'uncertain', icon: '⚠️', text: 'Low Confidence Prediction' };
+    }
+    if (result.is_healthy) {
+      return { cls: 'healthy', icon: '✅', text: 'Plant is Healthy' };
+    }
     return { cls: 'diseased', icon: '🔴', text: 'Disease Detected' };
   };
+  
   const badge = getBadge();
 
   return (
@@ -34,6 +42,22 @@ function ResultCard({ result }) {
       <div className={`status-badge ${badge.cls}`}>
         <span>{badge.icon}</span><span>{badge.text}</span>
       </div>
+      
+      {result.conf_level === 'low' && (
+        <div style={{
+          marginBottom: '16px',
+          padding: '10px 14px',
+          background: 'rgba(245, 158, 11, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.3)',
+          borderRadius: '8px',
+          fontSize: '0.85rem',
+          color: '#f59e0b',
+          lineHeight: '1.4'
+        }}>
+          ⚠️ <strong>Notice:</strong> The model identified a match, but the confidence is low. This can happen if the image background is busy or lighting is poor. Please verify this result.
+        </div>
+      )}
+      
       <div className="disease-name">{result.disease_name}</div>
       <ConfidenceBar confidence={result.confidence} />
       <div className="info-grid">

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 main.py - FastAPI Backend Server for Crop Disease Detection
 
@@ -82,6 +83,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "model", "best_model.pth")
 CLASS_NAMES_PATH = os.path.join(BASE_DIR, "model", "class_names.json")
 DISEASE_INFO_PATH = os.path.join(BASE_DIR, "model", "disease_info.json")
+print("Model path:", MODEL_PATH)
+print("Model exists:", os.path.exists(MODEL_PATH))
 
 NUM_CLASSES = 38
 CONFIDENCE_THRESHOLD = 0.70   # If confidence < 70%, say "uncertain"
@@ -108,7 +111,7 @@ def load_model():
     model = model.to(DEVICE)
     model.eval()   # Set to evaluation mode (disables dropout)
     
-    print("✅ Model loaded successfully!")
+    print("Model loaded successfully!")
     return model
 
 # Load class names {0: "Apple___Apple_scab", 1: "Apple___Black_rot", ...}
@@ -132,7 +135,7 @@ try:
     print("All data loaded. Server ready!")
     MODEL_LOADED = True
 except Exception as e:
-    print(f"⚠️ Warning: Could not load model: {e}")
+    print(f"Warning: Could not load model: {e}")
     print("Server starting without model. /predict will return demo data.")
     MODEL_LOADED = False
     model = None
@@ -252,6 +255,10 @@ async def predict(file: UploadFile = File(...)):
         # Preprocess: convert bytes → tensor
         tensor = preprocess_image(image_bytes)
         
+        print("\n--- DEBUG PREDICT ---")
+        print("Tensor shape:", tensor.shape)
+        print("Tensor min/max/mean:", tensor.min().item(), tensor.max().item(), tensor.mean().item())
+        
         # Run through model (no gradient needed for inference)
         with torch.no_grad():       # torch.no_grad() = faster, less memory
             outputs = model(tensor) # Shape: [1, 38] - score for each class
@@ -260,6 +267,16 @@ async def predict(file: UploadFile = File(...)):
             # Softmax makes all values between 0-1 and sum to 1
             probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
             
+            # Get top 5 predictions for debugging
+            top5_prob, top5_idx = torch.topk(probabilities, 5)
+            
+            # Print top 5 to console
+            print("Top 5 predictions:")
+            for i in range(5):
+                idx = top5_idx[i].item()
+                prob = top5_prob[i].item()
+                print(f"  {i+1}: {idx_to_class[idx]} with {prob*100:.2f}% (logit: {outputs[0][idx].item():.4f})")
+            
             # Get top 3 predictions (most confident first)
             top3_prob, top3_idx = torch.topk(probabilities, 3)
         
@@ -267,28 +284,6 @@ async def predict(file: UploadFile = File(...)):
         top_prob = top3_prob[0].item()        # Confidence score (0.0 to 1.0)
         top_idx = top3_idx[0].item()          # Index of predicted class (0-37)
         top_class_key = idx_to_class[top_idx] # e.g., "Tomato___Early_blight"
-        
-        # If confidence is too low, don't guess
-        if top_prob < CONFIDENCE_THRESHOLD:
-            return JSONResponse(content={
-                "disease_key": "uncertain",
-                "disease_name": "Cannot Determine",
-                "confidence": top_prob,
-                "confidence_percent": f"{top_prob*100:.1f}%",
-                "is_healthy": None,
-                "description": f"Model confidence is too low ({top_prob*100:.1f}%). The image may be unclear, not a leaf, or show a disease not in our database.",
-                "cause": "N/A",
-                "treatment": "Please consult a local agriculture officer.",
-                "prevention": "Take a clear, close-up photo of the affected leaf in good lighting.",
-                "top3": [
-                    {"class": idx_to_class[top3_idx[i].item()], "confidence": f"{top3_prob[i].item()*100:.1f}%"}
-                    for i in range(3)
-                ]
-            })
-        
-        # Get disease info from our JSON database
-        info = disease_info.get(top_class_key, {})
-        is_healthy = "healthy" in top_class_key.lower()
         
         # Build top-3 alternatives for display
         top3_results = [
@@ -300,11 +295,39 @@ async def predict(file: UploadFile = File(...)):
             for i in range(3)
         ]
         
+        # Determine confidence level
+        if top_prob >= 0.75:
+            conf_level = "high"
+        elif top_prob >= 0.35:
+            conf_level = "low"
+        else:
+            conf_level = "uncertain"
+            
+        # Get disease info from our JSON database
+        info = disease_info.get(top_class_key, {})
+        is_healthy = "healthy" in top_class_key.lower()
+        
+        if conf_level == "uncertain":
+            return JSONResponse(content={
+                "disease_key": "uncertain",
+                "disease_name": "Cannot Determine",
+                "confidence": top_prob,
+                "confidence_percent": f"{top_prob*100:.1f}%",
+                "conf_level": "uncertain",
+                "is_healthy": None,
+                "description": f"Model confidence is too low ({top_prob*100:.1f}%). The image may be blurry, not a leaf, or show a disease not in our database.",
+                "cause": "N/A",
+                "treatment": "Please consult a local agriculture officer.",
+                "prevention": "Take a clear, close-up photo of the affected leaf in good lighting.",
+                "top3_predictions": top3_results
+            })
+        
         return JSONResponse(content={
             "disease_key": top_class_key,
             "disease_name": info.get("display_name", top_class_key),
             "confidence": top_prob,
             "confidence_percent": f"{top_prob*100:.1f}%",
+            "conf_level": conf_level,
             "is_healthy": is_healthy,
             "description": info.get("description", ""),
             "cause": info.get("cause", ""),
