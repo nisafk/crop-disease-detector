@@ -78,8 +78,8 @@ Visit http://localhost:3000
 Apple, Blueberry, Cherry, Corn, Grape, Orange, Peach, Bell Pepper, Potato, Raspberry, Soybean, Squash, Strawberry, Tomato — covering 38 disease classes.
 
 ## 👨‍💻 Built By
-[Your Name] — 2nd Year AIML Student  
-[Your LinkedIn] | [Your GitHub]
+[Nisha fatima] — 2nd Year AIML Student  
+[Nisha fatima kabuli] | [nisafk]
 
 ## 📄 License
 MIT License
