@@ -136,7 +136,13 @@ function App() {
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
-      const response = await fetch(`${API_URL}/predict`, { method: 'POST', body: formData });
+      const response = await fetch(`${API_URL}/predict`, {
+        method: 'POST',
+        headers: {
+          'bypass-tunnel-reminder': 'true'
+        },
+        body: formData,
+      });
       if (!response.ok) { const err = await response.json(); throw new Error(err.detail || 'Prediction failed'); }
       setResult(await response.json());
     } catch (err) {
