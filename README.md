@@ -67,19 +67,28 @@ Visit http://localhost:3000
 2. Set environment variable: `REACT_APP_API_URL=https://your-backend.onrender.com`
 3. Deploy!
 
-## 📊 Model Details
+## 📊 Model Details & Performance
+
 - **Architecture:** ResNet50 (Transfer Learning)
 - **Pretrained on:** ImageNet (14M images)
 - **Fine-tuned on:** PlantVillage dataset
 - **Input size:** 224×224 RGB images
 - **Output:** 38 disease class probabilities
 
+### ⏱️ Inference Benchmark (Local CPU)
+I ran a benchmarking script on the model running locally on a standard CPU:
+*   **Model Load Time:** `0.65 seconds`
+*   **Average Latency:** `154.7 ms per image`
+*   **95th Percentile Latency:** `190.2 ms per image`
+*   **Throughput:** `6.46 images per second`
+*   **Status:** **GOOD** (Acceptable speed for real-time inference in production web APIs).
+
 ## 🌾 Supported Crops & Diseases
 Apple, Blueberry, Cherry, Corn, Grape, Orange, Peach, Bell Pepper, Potato, Raspberry, Soybean, Squash, Strawberry, Tomato — covering 38 disease classes.
 
 ## 👨‍💻 Built By
-[Your Name] — 2nd Year AIML Student  
-[Your LinkedIn] | [Your GitHub]
+Nisa (nisafk) — 2nd Year AIML Student  
+[GitHub Profile](https://github.com/nisafk)
 
 ## 📄 License
 MIT License
