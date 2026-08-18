@@ -143,10 +143,24 @@ function App() {
         },
         body: formData,
       });
-      if (!response.ok) { const err = await response.json(); throw new Error(err.detail || 'Prediction failed'); }
-      setResult(await response.json());
+      if (!response.ok) {
+        let errMessage = 'Prediction failed';
+        try {
+          const err = await response.json();
+          errMessage = err.detail || errMessage;
+        } catch (_) {
+          errMessage = 'Server error. Make sure CropAI backend is running on port 8000.';
+        }
+        throw new Error(errMessage);
+      }
+      const data = await response.json();
+      setResult(data);
     } catch (err) {
-      setError(err.message.includes('Failed to fetch') ? 'Cannot connect to server. Make sure backend is running on port 8000.' : err.message);
+      if (err.name === 'SyntaxError' || err.message.includes('JSON')) {
+        setError('Cannot parse server response. Make sure CropAI backend is running on port 8000.');
+      } else {
+        setError(err.message.includes('Failed to fetch') ? 'Cannot connect to server. Make sure backend is running on port 8000.' : err.message);
+      }
     } finally {
       setIsLoading(false);
     }
